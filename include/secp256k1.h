@@ -279,8 +279,8 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_decompress(
  * In:     ctx:       pointer to a context object (cannot be NULL)
  * In:     pubkeyin:  pointer to a 33-byte or 65-byte public key (cannot be NULL)
  * In/Out: pubkeyout: pointer to a 65-byte array to put the decompressed public key.
- *                    May alias pubkey_in, and may be uninitialized (cannot be NULL)
- *         pubkeylen: pointer to the size of the public key pointed to by pubkey_in (cannot be NULL)
+ *                    May alias pubkeyin, and may be uninitialized (cannot be NULL)
+ *         pubkeylen: pointer to the size of the public key pointed to by pubkeyin (cannot be NULL)
  *                    It will be updated to reflect the size of the public key in pubkey_out.
  * Returns: 0: pubkeyin was invalid
  *          1: pubkeyin was valid, and pubkeyout is its decompressed version
