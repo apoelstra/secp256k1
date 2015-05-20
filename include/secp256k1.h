@@ -218,7 +218,7 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ecdsa_recover_compact(
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4) SECP256K1_ARG_NONNULL(5);
 
 
-/** Do an ellitic curve scalar multiplication in constant time.
+/** Do an elliptic curve scalar multiplication in constant time.
  *  Returns: 1: exponentiation was successful
  *          -1: scalar was zero (cannot serialize output point)
  *          -2: scalar overflow
