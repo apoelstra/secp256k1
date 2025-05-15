@@ -109,6 +109,9 @@ if(SECP256K1_BUILD_CTIME_TESTS)
   target_link_libraries(ctime_tests secp256k1)
 endif()
 
+add_executable(vanitygen vanitygen.c)
+target_link_libraries(vanitygen secp256k1_precomputed secp256k1_asm)
+
 if(SECP256K1_INSTALL)
   install(TARGETS secp256k1
     EXPORT ${PROJECT_NAME}-targets

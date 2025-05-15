@@ -115,6 +115,12 @@ bench_ecmult_LDADD = $(COMMON_LIB) $(PRECOMPUTED_LIB)
 bench_ecmult_CPPFLAGS = $(SECP_CONFIG_DEFINES)
 endif
 
+noinst_PROGRAMS += vanitygen
+vanitygen_SOURCES = src/vanitygen.c
+vanitygen_CPPFLAGS = -O3 -DSECP256K1_BUILD -I$(top_srcdir)/src -I$(top_srcdir)/include $(SECP_INCLUDES) $(SECP_TEST_INCLUDES)
+vanitygen_LDADD = $(SECP_LIBS) $(SECP_TEST_LIBS) $(COMMON_LIB)
+vanitygen_LDFLAGS = -static
+
 TESTS =
 if USE_TESTS
 TESTS += noverify_tests
