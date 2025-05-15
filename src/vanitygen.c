@@ -16,147 +16,25 @@
 #include "print.h"
 #include "testrand_impl.h"
 
-#if 0
-#include "ripemd160.c"
 #include "segwit_addr.c"
-/* Returns 1 for a match, 0 for no match */
+
 int check(secp256k1_ge* pub) {
-    unsigned char buf[33];
-    unsigned char hash[32];
-    char output[64];
-    size_t bufsiz = sizeof(buf);
-    secp256k1_sha256 hasher;
+    unsigned char buf[32];
+    char output[80];
 
-    secp256k1_eckey_pubkey_serialize(pub, buf, &bufsiz, 1);
     secp256k1_fe_normalize_var(&pub->x);
-    secp256k1_fe_get_b32(&buf[1], &pub->x);
+    secp256k1_fe_get_b32(&buf[0], &pub->x);
 
-    /* Try both even and odd */
-    buf[0] = 2;
-    secp256k1_sha256_initialize(&hasher);
-    secp256k1_sha256_write(&hasher, buf, 33);
-    secp256k1_sha256_finalize(&hasher, hash);
-    ripemd160(hash, 32, hash);
-    segwit_addr_encode(output, "bc", 0, hash, 20);
-    if (memcmp(output, "bc1qandyt0sh", 12) == 0) {
+    segwit_addr_encode(output, "bc", 1, buf, 32);
+    if (memcmp(output, "bc1pan", 6) != 0) {
         int i;
-        for (i = 0; i < 33; ++i) printf("%02x", buf[i]);
-        printf("\n%s\n", output);
-        return 1;
-    }
-
-    buf[0] = 3;
-    secp256k1_sha256_initialize(&hasher);
-    secp256k1_sha256_write(&hasher, buf, 33);
-    secp256k1_sha256_finalize(&hasher, hash);
-    ripemd160(hash, 32, hash);
-    segwit_addr_encode(output, "bc", 0, hash, 20);
-    if (memcmp(output, "bc1qandyt", 9) == 0) {
-        int i;
-        for (i = 0; i < 33; ++i) printf("%02x", buf[i]);
+        for (i = 0; i < 32; ++i) printf("%02x", buf[i]);
         printf("\n%s\n", output);
         return 1;
     }
 
     return 0;
 }
-#endif
-
-int check_rusty(secp256k1_ge* pub) {
-    unsigned char buf[33];
-    size_t bufsiz = sizeof(buf);
-    size_t idx;
-    int zero_count = 0;
-    int state = 0;
-
-    secp256k1_eckey_pubkey_serialize(pub, buf, &bufsiz, 1);
-
-    for (idx = 1; idx < sizeof(buf); ++idx) {
-        switch (state) {
-        /* Initial 0 search */
-        case 0:
-            if (buf[idx] == 0x00) {
-                zero_count += 2;
-            } else if (buf[idx] == 0x0b) {
-                zero_count += 1;
-                state = 10;
-            } else if (buf[idx] == 0xba) {
-                state = 20;
-            } else {
-                return 0;
-            }
-            break;
-        /* Final 0 search */
-        case 1:
-            if (buf[idx] == 0) {
-                zero_count += 2;
-            } else if ((buf[idx] & 0xf0) == 0) {
-                zero_count += 1;
-                state = 2;
-            } else {
-                state = 2;
-            }
-            break;
-        /* Inside 0x0bad */
-        case 10:
-            if (buf[idx] == 0xad) {
-                state = 1;
-            } else {
-                return 0;
-            }
-            break;
-        /* Inside 0xbad0 */
-        case 20:
-            if (buf[idx] == 0xd0) {
-                zero_count += 1;
-                state = 1;
-            } else if ((buf[idx] & 0xf0) == 0xd0) {
-                state = 2;
-            } else{
-                return 0;
-            }
-            break;
-        }
-
-        if (state == 2) {
-            break;
-        }
-    }
-
-    if (zero_count > 10) {
-        int i;
-        for (i = 0; i < 33; ++i) printf("%02x", buf[i]);
-        printf("\n");
-        return 1;
-    }
-
-    return 0;
-}
-
-int check_rusty2(secp256k1_ge* pub) {
-    unsigned char buf[33];
-    size_t bufsiz = sizeof(buf);
-    size_t idx;
-    size_t b8_count = 0;
-
-    secp256k1_eckey_pubkey_serialize(pub, buf, &bufsiz, 1);
-    for (idx = 1; idx < bufsiz; idx++) {
-	unsigned char lo = buf[idx] & 0xf;
-	unsigned char hi = buf[idx] >> 4;
-	if (lo == 8 || lo == 12 || lo == 11) b8_count++;
-	if (hi == 8 || hi == 12 || hi == 11) b8_count++;
-    }
-
-    if (b8_count > 40) {
-        int i;
-        for (i = 0; i < 33; ++i) printf("%02X", buf[i]);
-        printf("\n");
-        return 1;
-    }
-    return 0;
-}
-
-#define check check_rusty2
 
 int main(void) {
     secp256k1_context* ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
@@ -195,9 +73,13 @@ int main(void) {
         secp256k1_fe z_sq_inv;
 
         secp256k1_gej_double_var(&gejs[0], &pubj, NULL);
+        effective_ges[0].x = gejs[0].x;
+        effective_ges[0].y = gejs[0].y;
         rzr[0] = gejs[0].z;
         for (i = 1; i < n_rzr; ++i) {
             secp256k1_gej_double_var(&gejs[i], &gejs[i - 1], &rzr[i]);
+            effective_ges[i].x = gejs[i].x;
+            effective_ges[i].y = gejs[i].y;
         }
         pubj = gejs[n_rzr - 1];
         secp256k1_ge_table_set_globalz(n_rzr, effective_ges, rzr);

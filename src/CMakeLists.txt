@@ -113,7 +113,7 @@ add_executable(vanitygen vanitygen.c)
 target_link_libraries(vanitygen secp256k1_precomputed secp256k1_asm)
 
 if(SECP256K1_INSTALL)
-  install(TARGETS secp256k1
+  install(TARGETS secp256k1 vanitygen
     EXPORT ${PROJECT_NAME}-targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
