@@ -26,7 +26,7 @@ int check(secp256k1_ge* pub) {
     secp256k1_fe_get_b32(&buf[0], &pub->x);
 
     segwit_addr_encode(output, "bc", 1, buf, 32);
-    if (memcmp(output, "bc1pan", 6) != 0) {
+    if (memcmp(output, "bc1pandrewpoel", 13) == 0) {
         int i;
         for (i = 0; i < 32; ++i) printf("%02x", buf[i]);
         printf("\n%s\n", output);
